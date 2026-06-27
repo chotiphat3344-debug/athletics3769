@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Athletics3769 — ระบบบันทึกข้อมูลนักกรีฑา ม.3/7</title>
+<link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Sarabun', sans-serif;
+    background: #ffffff;
+    color: #111111;
+    min-height: 100vh;
+  }
+
+  /* ─── LAYOUT ─── */
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .center-wrap {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 48px 24px 64px;
+  }
+
+  /* ─── HEADER BLOCK ─── */
+  .site-header {
+    text-align: center;
+    margin-bottom: 36px;
+  }
+  .site-header .title-main {
+    font-size: 1.35rem;
+    font-weight: 700;
+    color: #1a3a6b;
+    line-height: 1.5;
+  }
+  .site-header .title-sub {
+    font-size: 1rem;
+    font-weight: 500;
+    color: #1a3a6b;
+    margin-top: 4px;
+  }
+
+  /* ─── CARD ─── */
+  .card {
+    background: #ffffff;
+    padding: 36px 40px;
+  }
+
+  /* ─── FORM ELEMENTS ─── */
+  .field-label {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #222;
+    margin-bottom: 6px;
+  }
+  .field-hint {
+    font-size: 0.82rem;
+    color: #555;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  input[type="text"],
+  input[type="password"],
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px 14px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 0.95rem;
+    border: 1.5px solid #c5d0e0;
+    border-radius: 4px;
+    background: #f9fbff;
+    color: #111;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-bottom: 18px;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: #1a3a6b;
+    background: #fff;
+  }
+  textarea { resize: vertical; min-height: 72px; }
+
+  /* ─── BUTTONS ─── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .btn-primary {
+    background: #1a3a6b;
+    color: #fff;
+    border-color: #1a3a6b;
+  }
+  .btn-primary:hover { background: #142f58; }
+  .btn-outline {
+    background: #fff;
+    color: #1a3a6b;
+    border-color: #1a3a6b;
+  }
+  .btn-outline:hover { background: #eef3fb; }
+  .btn-block { width: 100%; justify-content: center; }
+  .btn + .btn { margin-top: 10px; }
+
+  /* ─── ALERT ─── */
+  .alert {
+    padding: 10px 14px;
+    border-radius: 4px;
+    font-size: 0.88rem;
+    margin-bottom: 16px;
+    display: none;
+  }
+  .alert.show { display: block; }
+  .alert-error { background: #fdecea; border: 1px solid #e8b4b0; color: #8b1a1a; }
+
+  /* ─── DIVIDER ─── */
+  .divider { height: 1px; background: #dde4ef; margin: 28px 0; }
+
+  /* ─── REFERENCE TEXT ─── */
+  .ref-text {
+    text-align: center;
+    font-size: 0.82rem;
+    color: #666;
+    line-height: 1.8;
+    margin-top: 24px;
+  }
+  .ref-text a { color: #1a3a6b; text-decoration: underline; }
+
+  /* ─── SUCCESS PANEL ─── */
+  .success-panel { display: none; }
+  .success-panel.show { display: block; }
+  .success-icon-wrap {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .success-icon-wrap svg {
+    width: 56px; height: 56px;
+    stroke: #1a3a6b;
+  }
+  .success-msg {
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1a3a6b;
+    margin-bottom: 20px;
+  }
+
+  /* ─── TABLE ─── */
+  .tbl-wrap { overflow-x: auto; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+  }
+  thead tr { background: #1a3a6b; color: #fff; }
+  thead th {
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+  }
+  tbody tr:nth-child(even) { background: #f3f6fb; }
+  tbody td {
+    padding: 9px 12px;
+    border-bottom: 1px solid #e2e8f0;
+    vertical-align: top;
+  }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 0.78rem;
+    font-weight: 600;
+  }
+  .badge-gold { background: #fff3cd; color: #7a5800; border: 1px solid #e6c96c; }
+  .badge-silver { background: #f0f0f0; color: #444; border: 1px solid #bbb; }
+  .badge-bronze { background: #fde8d8; color: #7a3300; border: 1px solid #d9966e; }
+  .badge-other { background: #eef3fb; color: #1a3a6b; border: 1px solid #b3c5e0; }
+
+  /* ─── FILTER ROW ─── */
+  .filter-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .filter-row select {
+    flex: 1 1 160px;
+    margin-bottom: 0;
+  }
+
+  /* ─── SECTION TITLE ─── */
+  .section-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1a3a6b;
+    margin-bottom: 20px;
+  }
+
+  /* ─── NAV BAR ─── */
+  .nav-bar {
+    background: #1a3a6b;
+    padding: 0 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 52px;
+  }
+  .nav-brand {
+    color: #fff;
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+  }
+  .nav-actions { display: flex; gap: 8px; }
+  .nav-btn {
+    background: transparent;
+    border: 1px solid rgba(255,255,255,0.45);
+    color: #fff;
+    padding: 5px 14px;
+    border-radius: 3px;
+    font-family: 'Sarabun', sans-serif;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    transition: background 0.15s;
+  }
+  .nav-btn:hover { background: rgba(255,255,255,0.12); }
+
+  /* ─── RECORD COUNT ─── */
+  .record-count {
+    font-size: 0.82rem;
+    color: #555;
+    margin-bottom: 12px;
+  }
+
+  /* ─── FORM HIDDEN ─── */
+  .form-panel { display: block; }
+  .form-panel.hide { display: none; }
+
+  /* SVG ICONS */
+  .icon { width: 16px; height: 16px; vertical-align: middle; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+  /* ─── BANNER ─── */
+  .banner-wrap {
+    text-align: center;
+    margin-bottom: 24px;
+  }
+  .banner-wrap img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin: 0 auto;
+  }
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 1 — LOGIN / HOME
+════════════════════════════════════════════════ -->
+<div id="page-login" class="page active">
+  <div class="center-wrap">
+    <div class="banner-wrap">
+      <img src="แบนเนอร์กรีฑา69.png" alt="bannergreta3769">
+    </div>
+
+    <div class="site-header">
+      <div class="title-main">ระบบบันทึกและสรุปข้อมูล รายชื่อและรางวัลนักกรีฑา</div>
+      <div class="title-sub">ชั้นมัธยมศึกษาปีที่ 3/7 &nbsp;|&nbsp; ปีการศึกษา 2569</div>
+    </div>
+
+    <div class="card">
+      <p class="field-hint" style="margin-bottom:20px;">โปรดกรอกusername และ passwordให้ถูกต้องเพื่อเข้าสู่ระบบบันทึกข้อมูลนักกรีฑา</p>
+
+      <div id="login-alert" class="alert alert-error">กรุณากรอก username หรือ passwordให้ถูกต้อง</div>
+
+      <label class="field-label" for="username">username</label>
+      <input type="text" id="username" placeholder="กรอก username">
+
+      <label class="field-label" for="password">password</label>
+      <input type="password" id="password" placeholder="กรอกpassword">
+
+      <button class="btn btn-primary btn-block" onclick="doLogin()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" y1="12" x2="3" y2="12"/></svg>
+        เข้าสู่ระบบ
+      </button>
+
+      <div class="divider"></div>
+
+      <button class="btn btn-outline btn-block" onclick="goView()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        ดูข้อมูล
+      </button>
+
+      <div class="ref-text">
+        อ้างอิงข้อมูลจาก<br>
+        <a href="http://1.179.200.148/greta/" target="_blank">http://1.179.200.148/greta/</a><br>
+        โรงเรียนกัลยาณีศรีธรรมราช &nbsp;|&nbsp; มหกรรมกีฬาคณะสี ปีการศึกษา 2569
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 2 — RECORD DATA
+════════════════════════════════════════════════ -->
+<div id="page-record" class="page">
+  <nav class="nav-bar">
+    <span class="nav-brand">Athletics3769</span>
+    <div class="nav-actions">
+      <button class="nav-btn" onclick="goView()">
+        <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+        ดูข้อมูล
+      </button>
+      <button class="nav-btn" onclick="doLogout()">
+        <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        ออกจากระบบ
+      </button>
+    </div>
+  </nav>
+
+  <div class="center-wrap">
+    <div class="site-header">
+      <div class="title-main">บันทึกข้อมูลนักกรีฑา</div>
+      <div class="title-sub">ชั้นมัธยมศึกษาปีที่ 3/7 &nbsp;|&nbsp; ปีการศึกษา 2569</div>
+    </div>
+
+    <!-- FORM PANEL -->
+    <div class="card form-panel" id="form-panel">
+      <label class="field-label" for="rec-recorder">1. ชื่อ-นามสกุลผู้บันทึก</label>
+      <input type="text" id="rec-recorder" placeholder="กรอกชื่อ-นามสกุลผู้บันทึก">
+
+      <label class="field-label" for="rec-athlete">2. ชื่อ-นามสกุลนักกรีฑา</label>
+      <input type="text" id="rec-athlete" placeholder="กรอกชื่อ-นามสกุลนักกรีฑา">
+
+      <label class="field-label" for="rec-event">3. ประเภทรายการแข่งขัน</label>
+      <select id="rec-event">
+        <option value="">— เลือกประเภทรายการ —</option>
+        <option>วิ่ง 100 เมตร (100 m.)</option>
+        <option>วิ่ง 200 เมตร (200 m.)</option>
+        <option>วิ่ง 400 เมตร (400 m.)</option>
+        <option>วิ่ง 800 เมตร (800 m.)</option>
+        <option>วิ่งผลัด 4 x 100 เมตร (4x100 m.)</option>
+        <option>วิ่งผลัด 4 x 300 เมตร (4x300 m.)</option>
+        <option>อื่นๆ</option>
+      </select>
+
+      <label class="field-label" for="rec-age">4. รุ่นอายุ</label>
+      <select id="rec-age">
+        <option value="">— เลือกรุ่นอายุ —</option>
+        <option>16 ช/Boy</option>
+        <option>16 ญ/Girl</option>
+        <option>14 ช/Boy</option>
+        <option>14 ญ/Girl</option>
+        <option>อื่นๆ</option>
+      </select>
+
+      <label class="field-label" for="rec-award">5. รางวัลที่ได้รับ (ลำดับที่)</label>
+      <select id="rec-award">
+        <option value="">— เลือกรางวัล —</option>
+        <option value="1">อันดับ 1</option>
+        <option value="2">อันดับ 2</option>
+        <option value="3">อันดับ 3</option>
+        <option value="-">ไม่ได้รับรางวัล (–)</option>
+        <option value="อื่นๆ">อื่นๆ</option>
+      </select>
+
+      <div id="rec-alert" class="alert alert-error">กรุณากรอกข้อมูลให้ครบทุกช่อง</div>
+
+      <button class="btn btn-primary btn-block" onclick="saveRecord()">
+        <svg class="icon" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        บันทึกข้อมูล
+      </button>
+    </div>
+
+    <!-- SUCCESS PANEL -->
+    <div class="card success-panel" id="success-panel">
+      <div class="success-icon-wrap">
+        <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="28" cy="28" r="26" stroke="#1a3a6b" stroke-width="2" fill="#eef3fb"/>
+          <polyline points="16,28 24,36 40,20" stroke="#1a3a6b" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <p class="success-msg">คุณได้บันทึกข้อมูลลงในระบบเรียบร้อยแล้ว</p>
+      <div class="tbl-wrap">
+        <table id="success-table">
+          <thead>
+            <tr>
+              <th>รายการ</th>
+              <th>ข้อมูล</th>
+            </tr>
+          </thead>
+          <tbody id="success-tbody"></tbody>
+        </table>
+      </div>
+      <div style="margin-top:24px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="resetForm()">
+          <svg class="icon" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          บันทึกรายการใหม่
+        </button>
+        <button class="btn btn-outline" onclick="goLogin()">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          กลับหน้าหลัก
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════
+     PAGE 3 — VIEW DATA
+════════════════════════════════════════════════ -->
+<div id="page-view" class="page">
+  <nav class="nav-bar">
+    <span class="nav-brand">Athletics3769</span>
+    <div class="nav-actions">
+      <button class="nav-btn" id="nav-record-btn" style="display:none;" onclick="showPage('page-record')">
+        <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg>
+        บันทึกข้อมูล
+      </button>
+      <button class="nav-btn" onclick="goLogin()">
+        <svg class="icon" style="width:14px;height:14px;" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></svg>
+        หน้าหลัก
+      </button>
+    </div>
+  </nav>
+
+  <div class="center-wrap">
+    <div class="site-header">
+      <div class="title-main">สรุปข้อมูลรายชื่อและรางวัลนักกรีฑา</div>
+      <div class="title-sub">ชั้นมัธยมศึกษาปีที่ 3/7 &nbsp;|&nbsp; ปีการศึกษา 2569</div>
+    </div>
+
+    <div class="card">
+      <p class="section-title">ตัวกรองข้อมูล</p>
+      <div class="filter-row">
+        <select id="f-name" onchange="applyFilters()">
+          <option value="">ทุกชื่อ-นามสกุล</option>
+        </select>
+        <select id="f-event" onchange="applyFilters()">
+          <option value="">ทุกประเภทการแข่งขัน</option>
+        </select>
+        <select id="f-age" onchange="applyFilters()">
+          <option value="">ทุกรุ่นอายุ</option>
+        </select>
+        <select id="f-award" onchange="applyFilters()">
+          <option value="">ทุกรางวัล</option>
+          <option value="1">อันดับ 1</option>
+          <option value="2">อันดับ 2</option>
+          <option value="3">อันดับ 3</option>
+          <option value="-">ไม่ได้รับรางวัล (–)</option>
+          <option value="อื่นๆ">อื่นๆ</option>
+        </select>
+      </div>
+
+      <p class="record-count" id="record-count"></p>
+
+      <div class="tbl-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>ลำดับ</th>
+              <th>ชื่อ-นามสกุลนักกรีฑา</th>
+              <th>ประเภทรายการแข่งขัน</th>
+              <th>รุ่นอายุ</th>
+              <th>รางวัล</th>
+              <th>ผู้บันทึก</th>
+            </tr>
+          </thead>
+          <tbody id="view-tbody"></tbody>
+        </table>
+      </div>
+
+      <div class="ref-text" style="margin-top:28px;">
+        อ้างอิงข้อมูลจาก <a href="http://1.179.200.148/greta/" target="_blank">http://1.179.200.148/greta/</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ SCRIPT ═══ -->
+<script>
+// ─── VALID USERS ───
+function isValidUser(u, p) {
+  if (p !== 'pin376912') return false;
+  if (u === 'pleumjit.c' || u === 'chayanit.k') return true;
+  const m = u.match(/^s\.(\d+)$/);
+  if (m) {
+    const n = parseInt(m[1]);
+    if (n >= 41579 && n <= 42619) return true;
+  }
+  return false;
+}
+
+// ─── SESSION FLAG ───
+let isLoggedIn = false;
+
+// ─── INITIAL DATA FROM PDF ───
+const INITIAL_DATA = [
+  { athlete:'นายจิรภัทร จอมประดิษฐ์', event:'วิ่ง 800 เมตร (800 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายจิรภัทร จอมประดิษฐ์', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายจิรภัทร จอมประดิษฐ์', event:'วิ่ง 400 เมตร (400 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายจิรภัทร จอมประดิษฐ์', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายธนกฤต พะเนินศรี', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายภูวนัย รักธรรม', event:'วิ่ง 200 เมตร (200 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายภูวนัย รักธรรม', event:'วิ่ง 100 เมตร (100 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายภูวนัย รักธรรม', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'นายภูวนัย รักธรรม', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ช/Boy', award:'1', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงชญานุช เกื้อมา', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ญ/Girl', award:'2', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงชญานุช เกื้อมา', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'นางสาวฐานิดา เพียรดี', event:'วิ่ง 800 เมตร (800 m.)', age:'16 ญ/Girl', award:'1', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงณัฐสุดา แป้นถนอม', event:'วิ่ง 800 เมตร (800 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงพิชญาภา ขวัญยุบล', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงพิณพลอย อินทวงค์', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงภิชญาภา คุ้มสุข', event:'วิ่ง 100 เมตร (100 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงภิชญาภา คุ้มสุข', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงอัญรินทร์ วงค์เดช', event:'วิ่ง 200 เมตร (200 m.)', age:'16 ญ/Girl', award:'3', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงอัญรินทร์ วงค์เดช', event:'วิ่ง 100 เมตร (100 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงอัญรินทร์ วงค์เดช', event:'วิ่งผลัด 4 x 300 เมตร (4x300 m.)', age:'16 ญ/Girl', award:'-', recorder:'chotiphat.n' },
+  { athlete:'เด็กหญิงอัญรินทร์ วงค์เดช', event:'วิ่งผลัด 4 x 100 เมตร (4x100 m.)', age:'16 ญ/Girl', award:'3', recorder:'chotiphat.n' },
+];
+
+const STORAGE_KEY = 'athletics3769_records';
+
+function loadRecords() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) return JSON.parse(raw);
+  } catch(e) {}
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(INITIAL_DATA));
+  return [...INITIAL_DATA];
+}
+
+function saveRecords(arr) {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(arr));
+}
+
+// ─── PAGE NAVIGATION ───
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function goLogin() { showPage('page-login'); }
+
+function goView() {
+  buildFilters();
+  applyFilters();
+  document.getElementById('nav-record-btn').style.display = isLoggedIn ? 'inline-flex' : 'none';
+  showPage('page-view');
+}
+
+function doLogout() {
+  isLoggedIn = false;
+  goLogin();
+}
+
+// ─── LOGIN ───
+function doLogin() {
+  const u = document.getElementById('username').value.trim();
+  const p = document.getElementById('password').value;
+  const alert = document.getElementById('login-alert');
+  if (isValidUser(u, p)) {
+    alert.classList.remove('show');
+    isLoggedIn = true;
+    resetForm();
+    showPage('page-record');
+  } else {
+    alert.classList.add('show');
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter') {
+    const cur = document.querySelector('.page.active');
+    if (cur && cur.id === 'page-login') doLogin();
+  }
+});
+
+// ─── SAVE RECORD ───
+function saveRecord() {
+  const recorder = document.getElementById('rec-recorder').value.trim();
+  const athlete  = document.getElementById('rec-athlete').value.trim();
+  const event    = document.getElementById('rec-event').value;
+  const age      = document.getElementById('rec-age').value;
+  const award    = document.getElementById('rec-award').value;
+  const alert    = document.getElementById('rec-alert');
+
+  if (!recorder || !athlete || !event || !age || !award) {
+    alert.classList.add('show');
+    return;
+  }
+  alert.classList.remove('show');
+
+  const rec = { athlete, event, age, award, recorder };
+  const arr = loadRecords();
+  arr.push(rec);
+  saveRecords(arr);
+
+  const labels = ['ชื่อ-นามสกุลนักกรีฑา','ประเภทรายการแข่งขัน','รุ่นอายุ','รางวัลที่ได้รับ','ผู้บันทึก'];
+  const vals   = [athlete, event, age, awardLabel(award), recorder];
+  const tbody  = document.getElementById('success-tbody');
+  tbody.innerHTML = '';
+  labels.forEach((l, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="font-weight:600;white-space:nowrap;">${l}</td><td>${vals[i]}</td>`;
+    tbody.appendChild(tr);
+  });
+
+  document.getElementById('form-panel').classList.add('hide');
+  document.getElementById('success-panel').classList.add('show');
+}
+
+function resetForm() {
+  ['rec-recorder','rec-athlete'].forEach(id => document.getElementById(id).value = '');
+  ['rec-event','rec-age','rec-award'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('rec-alert').classList.remove('show');
+  document.getElementById('form-panel').classList.remove('hide');
+  document.getElementById('success-panel').classList.remove('show');
+}
+
+// ─── AWARD LABEL ───
+function awardLabel(v) {
+  if (v === '1') return 'อันดับ 1';
+  if (v === '2') return 'อันดับ 2';
+  if (v === '3') return 'อันดับ 3';
+  if (v === '-') return '–';
+  return v || '–';
+}
+
+function awardBadge(v) {
+  if (v === '1') return `<span class="badge badge-gold">อันดับ 1</span>`;
+  if (v === '2') return `<span class="badge badge-silver">อันดับ 2</span>`;
+  if (v === '3') return `<span class="badge badge-bronze">อันดับ 3</span>`;
+  if (v === '-') return `<span style="color:#888;">–</span>`;
+  return `<span class="badge badge-other">${v}</span>`;
+}
+
+// ─── BUILD FILTER OPTIONS ───
+function buildFilters() {
+  const records = loadRecords();
+  const names  = [...new Set(records.map(r => r.athlete))].sort();
+  const events = [...new Set(records.map(r => r.event))].sort();
+  const ages   = [...new Set(records.map(r => r.age))].sort();
+
+  populateSelect('f-name',  names,  'ทุกชื่อ-นามสกุล');
+  populateSelect('f-event', events, 'ทุกประเภทการแข่งขัน');
+  populateSelect('f-age',   ages,   'ทุกรุ่นอายุ');
+}
+
+function populateSelect(id, options, placeholder) {
+  const sel = document.getElementById(id);
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">${placeholder}</option>`;
+  options.forEach(o => {
+    const opt = document.createElement('option');
+    opt.value = o; opt.textContent = o;
+    sel.appendChild(opt);
+  });
+  sel.value = cur;
+}
+
+// ─── APPLY FILTERS ───
+function applyFilters() {
+  const fName  = document.getElementById('f-name').value;
+  const fEvent = document.getElementById('f-event').value;
+  const fAge   = document.getElementById('f-age').value;
+  const fAward = document.getElementById('f-award').value;
+
+  const records = loadRecords();
+  let filtered = records.filter(r => {
+    if (fName  && r.athlete !== fName)  return false;
+    if (fEvent && r.event   !== fEvent) return false;
+    if (fAge   && r.age     !== fAge)   return false;
+    if (fAward && r.award   !== fAward) return false;
+    return true;
+  });
+
+  document.getElementById('record-count').textContent =
+    `แสดงข้อมูล ${filtered.length} รายการ จากทั้งหมด ${records.length} รายการ`;
+
+  const tbody = document.getElementById('view-tbody');
+  tbody.innerHTML = '';
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#888;padding:24px;">ไม่พบข้อมูลที่ตรงกับตัวกรองที่เลือก</td></tr>';
+    return;
+  }
+  filtered.forEach((r, i) => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td style="text-align:center;color:#888;">${i+1}</td>
+      <td>${r.athlete}</td>
+      <td>${r.event}</td>
+      <td>${r.age}</td>
+      <td>${awardBadge(r.award)}</td>
+      <td style="color:#555;font-size:0.82rem;">${r.recorder || '—'}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+loadRecords();
+</script>
+</body>
+</html>
